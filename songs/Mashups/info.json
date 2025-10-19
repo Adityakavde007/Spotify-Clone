@@ -1,4 +1,6 @@
 {
-  "title": "Mashup",
-  "description": "Creative song remixes and blends"
-}
+      "folder": "mashup",
+      "title": "Mashup", 
+      "description": "Creative song remixes and blends",
+      "cover": "songs/mashup/cover.jpg"
+    }
