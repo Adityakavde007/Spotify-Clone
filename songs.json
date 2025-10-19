@@ -1,0 +1,46 @@
+{
+  "arjit_singh": [
+    {"name": "Tum Hi Ho", "url": "songs/arjit_singh/tum_hi_ho.mp3"},
+    {"name": "Channa Mereya", "url": "songs/arjit_singh/channa_mereya.mp3"}
+  ],
+  "english": [
+    {"name": "Shape of You", "url": "songs/english/shape_of_you.mp3"},
+    {"name": "Blinding Lights", "url": "songs/english/blinding_lights.mp3"}
+  ],
+  "funk": [
+    {"name": "Uptown Funk", "url": "songs/funk/uptown_funk.mp3"},
+    {"name": "Get Lucky", "url": "songs/funk/get_lucky.mp3"}
+  ],
+  "hindi": [
+    {"name": "Tum Hi Ho", "url": "songs/hindi/tum_hi_ho.mp3"},
+    {"name": "Gerua", "url": "songs/hindi/gerua.mp3"}
+  ],
+  "honey_singh": [
+    {"name": "Blue Eyes", "url": "songs/honey_singh/blue_eyes.mp3"},
+    {"name": "Lungi Dance", "url": "songs/honey_singh/lungi_dance.mp3"}
+  ],
+  "kk_special": [
+    {"name": "Tadap Tadap", "url": "songs/kk_special/tadap_tadap.mp3"},
+    {"name": "Zara Sa", "url": "songs/kk_special/zara_sa.mp3"}
+  ],
+  "krishna_flute": [
+    {"name": "Divine Flute", "url": "songs/krishna_flute/divine_flute.mp3"},
+    {"name": "Peaceful Melody", "url": "songs/krishna_flute/peaceful_melody.mp3"}
+  ],
+  "late_night_chill": [
+    {"name": "Chill Vibes", "url": "songs/late_night_chill/chill_vibes.mp3"},
+    {"name": "Relaxing Beats", "url": "songs/late_night_chill/relaxing_beats.mp3"}
+  ],
+  "marathi": [
+    {"name": "Zing Zing Zingat", "url": "songs/marathi/zingat.mp3"},
+    {"name": "Apsara Aali", "url": "songs/marathi/apsara_aali.mp3"}
+  ],
+  "mashup": [
+    {"name": "Bollywood Mashup", "url": "songs/mashup/bollywood_mashup.mp3"},
+    {"name": "Party Mashup", "url": "songs/mashup/party_mashup.mp3"}
+  ],
+  "vishal_mishra": [
+    {"name": "Tere Hawale", "url": "songs/vishal_mishra/tere_hawale.mp3"},
+    {"name": "Man Bhaariya", "url": "songs/vishal_mishra/man_bhaariya.mp3"}
+  ]
+}
