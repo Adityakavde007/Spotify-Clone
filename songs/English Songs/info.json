@@ -1,4 +1,6 @@
-{
-  "title": "English Songs", 
-  "description": "International pop hits and English classics"
-}
+ {
+      "folder": "english",
+      "title": "English Songs", 
+      "description": "International pop hits and English classics",
+      "cover": "songs/english/cover.jpg"
+    }
