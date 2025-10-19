@@ -1,4 +1,6 @@
-{
-  "title": "Marathi Songs",
-  "description": "Traditional and contemporary Marathi music"
-}
+ {
+      "folder": "marathi",
+      "title": "Marathi Songs",
+      "description": "Traditional and contemporary Marathi music",
+      "cover": "songs/marathi/cover.jpg"
+    }
