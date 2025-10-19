@@ -1,4 +1,6 @@
-{
-  "title": "KK Special",
-  "description": "Legendary KK's unforgettable melodies"
-}
+ {
+      "folder": "kk_special",
+      "title": "KK Special",
+      "description": "Legendary KK's unforgettable melodies", 
+      "cover": "songs/kk_special/cover.jpg"
+    }
