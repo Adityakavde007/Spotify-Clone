@@ -57,6 +57,75 @@ const utils = {
                 DOM[btn] = document.getElementById(btn);
             }
         });
+    },
+
+    // YouTube Music API search
+    async searchYouTubeMusic(query) {
+        try {
+            // Using a proxy to avoid CORS issues
+            const response = await fetch(`https://corsproxy.io/?https://www.youtube.com/results?search_query=${encodeURIComponent(query + " audio")}`);
+            const html = await response.text();
+            
+            // Extract video ID from search results (simplified approach)
+            const videoIdMatch = html.match(/"videoId":"([^"]+)"/);
+            if (videoIdMatch) {
+                return `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=1`;
+            }
+            return null;
+        } catch (error) {
+            console.error("YouTube search failed:", error);
+            return null;
+        }
+    },
+
+    // Deezer API search
+    async searchDeezer(query) {
+        try {
+            const response = await fetch(`https://corsproxy.io/?https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=1`);
+            const data = await response.json();
+            
+            if (data.data && data.data.length > 0) {
+                return data.data[0].preview; // 30-second preview
+            }
+            return null;
+        } catch (error) {
+            console.error("Deezer search failed:", error);
+            return null;
+        }
+    },
+
+    // SoundCloud API search
+    async searchSoundCloud(query) {
+        try {
+            // Using a public SoundCloud API proxy
+            const response = await fetch(`https://corsproxy.io/?https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(query)}&client_id=YOUR_CLIENT_ID&limit=1`);
+            const data = await response.json();
+            
+            if (data.collection && data.collection.length > 0) {
+                return data.collection[0].stream_url + "?client_id=YOUR_CLIENT_ID";
+            }
+            return null;
+        } catch (error) {
+            console.error("SoundCloud search failed:", error);
+            return null;
+        }
+    },
+
+    // JioSaavn API (for Indian music)
+    async searchJioSaavn(query) {
+        try {
+            const response = await fetch(`https://corsproxy.io/?https://www.jiosaavn.com/api.php?__call=autocomplete.get&query=${encodeURIComponent(query)}&_format=json&_marker=0`);
+            const data = await response.json();
+            
+            if (data.songs && data.songs.data.length > 0) {
+                const song = data.songs.data[0];
+                return song.media_preview_url || song.perma_url;
+            }
+            return null;
+        } catch (error) {
+            console.error("JioSaavn search failed:", error);
+            return null;
+        }
     }
 };
 
@@ -112,8 +181,8 @@ const audioControls = {
         }
     },
 
-    playMusic(url, pause = false) {
-        console.log("Attempting to play:", url);
+    async playMusic(songData, pause = false) {
+        console.log("Playing:", songData.name);
         
         if (!APP_STATE.currentSong) {
             APP_STATE.currentSong = new Audio();
@@ -123,43 +192,63 @@ const audioControls = {
         APP_STATE.currentSong.pause();
         APP_STATE.currentSong.currentTime = 0;
         
-        // Set new source
-        APP_STATE.currentSong.src = url;
-        this.resetSeekbar();
-        
-        const songList = Array.from(DOM.songUL.querySelectorAll("li"));
-        const index = songList.findIndex(li => li.getAttribute("data-url") === url);
-        
-        if (index !== -1) {
-            APP_STATE.currentIndex = index;
-        }
-        
+        // Show loading state
         if (DOM.songInfo) {
-            DOM.songInfo.innerHTML = utils.sanitizeName(url.split(/[/\\]/).pop());
+            DOM.songInfo.innerHTML = `Loading: ${songData.name}...`;
         }
         
-        if (!pause) {
-            // Use canplaythrough to ensure audio is ready
-            const playWhenReady = () => {
+        try {
+            // Try to get streaming URL from API
+            let audioUrl = songData.url;
+            
+            if (!audioUrl || audioUrl.includes('local')) {
+                // Search for the song online
+                console.log(`Searching for: ${songData.name}`);
+                
+                // Try different APIs in sequence
+                audioUrl = await utils.searchDeezer(songData.name) ||
+                          await utils.searchYouTubeMusic(songData.name) ||
+                          await utils.searchJioSaavn(songData.name);
+                
+                if (!audioUrl) {
+                    throw new Error("No streaming source found");
+                }
+            }
+            
+            // Set audio source
+            APP_STATE.currentSong.src = audioUrl;
+            this.resetSeekbar();
+            
+            const songList = Array.from(DOM.songUL.querySelectorAll("li"));
+            const index = songList.findIndex(li => li.getAttribute("data-name") === songData.name);
+            
+            if (index !== -1) {
+                APP_STATE.currentIndex = index;
+            }
+            
+            if (DOM.songInfo) {
+                DOM.songInfo.innerHTML = songData.name;
+            }
+            
+            if (!pause) {
                 APP_STATE.currentSong.play().then(() => {
-                    console.log("Audio playing successfully");
                     if (DOM.play) DOM.play.src = "img/pause.svg";
+                    console.log("Now playing:", songData.name);
                 }).catch(error => {
                     console.error("Play failed:", error);
+                    if (DOM.songInfo) {
+                        DOM.songInfo.innerHTML = `Error: ${songData.name}`;
+                    }
                 });
-                APP_STATE.currentSong.removeEventListener('canplaythrough', playWhenReady);
-            };
+            } else {
+                if (DOM.play) DOM.play.src = "img/play.svg";
+            }
             
-            APP_STATE.currentSong.addEventListener('canplaythrough', playWhenReady);
-            
-            // Also try direct play as fallback
-            APP_STATE.currentSong.play().then(() => {
-                if (DOM.play) DOM.play.src = "img/pause.svg";
-            }).catch(error => {
-                console.log("Direct play failed, waiting for canplaythrough");
-            });
-        } else {
-            if (DOM.play) DOM.play.src = "img/play.svg";
+        } catch (error) {
+            console.error("Error loading song:", error);
+            if (DOM.songInfo) {
+                DOM.songInfo.innerHTML = `Error: ${songData.name}`;
+            }
         }
     },
 
@@ -188,7 +277,9 @@ const audioControls = {
                 const songList = Array.from(DOM.songUL.querySelectorAll("li"));
                 if (APP_STATE.currentIndex > 0) {
                     APP_STATE.currentIndex--;
-                    this.playMusic(songList[APP_STATE.currentIndex].getAttribute("data-url"));
+                    const songName = songList[APP_STATE.currentIndex].getAttribute("data-name");
+                    const songUrl = songList[APP_STATE.currentIndex].getAttribute("data-url");
+                    this.playMusic({ name: songName, url: songUrl });
                 }
             };
         }
@@ -198,7 +289,9 @@ const audioControls = {
                 const songList = Array.from(DOM.songUL.querySelectorAll("li"));
                 if (APP_STATE.currentIndex < songList.length - 1) {
                     APP_STATE.currentIndex++;
-                    this.playMusic(songList[APP_STATE.currentIndex].getAttribute("data-url"));
+                    const songName = songList[APP_STATE.currentIndex].getAttribute("data-name");
+                    const songUrl = songList[APP_STATE.currentIndex].getAttribute("data-url");
+                    this.playMusic({ name: songName, url: songUrl });
                 }
             };
         }
@@ -221,9 +314,10 @@ const audioControls = {
             }
             
             APP_STATE.currentIndex = nextIndex;
-            const nextSongUrl = songList[nextIndex].getAttribute("data-url");
+            const songName = songList[nextIndex].getAttribute("data-name");
+            const songUrl = songList[nextIndex].getAttribute("data-url");
             
-            this.playMusic(nextSongUrl);
+            this.playMusic({ name: songName, url: songUrl });
         };
     }
 };
@@ -250,6 +344,7 @@ const uiControls = {
                 <img class="invert" width="34" src="img/music.svg" alt="">
                 <div class="info">
                     <div>${cleanName}</div>
+                    <div class="song-source">Streaming...</div>
                 </div>
                 <div class="playnow">
                     <span>Play Now</span>
@@ -299,62 +394,62 @@ async function getSongs(folder) {
         utils.resetEventListeners();
         audioControls.resetSeekbar();
 
-        // Real music samples from Mixkit
+        // Song data with real song names for API search
         const songsData = {
             arjit_singh: [
-                {"name": "Romantic Melody 1", "url": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"},
-                {"name": "Love Song 2", "url": "https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3"},
-                {"name": "Heartfelt Track 3", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"}
+                {"name": "Tum Hi Ho Arijit Singh", "url": ""},
+                {"name": "Channa Mereya Arijit Singh", "url": ""},
+                {"name": "Phir Mohabbat Arijit Singh", "url": ""}
             ],
             english: [
-                {"name": "Pop Dance Beat", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"},
-                {"name": "Electronic Vibes", "url": "https://assets.mixkit.co/music/preview/mixkit-deep-urban-623.mp3"},
-                {"name": "Chill Pop", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"}
+                {"name": "Shape of You Ed Sheeran", "url": ""},
+                {"name": "Blinding Lights The Weeknd", "url": ""},
+                {"name": "Dance Monkey Tones and I", "url": ""}
             ],
             funk: [
-                {"name": "Funky Groove", "url": "https://assets.mixkit.co/music/preview/mixkit-funky-groove-299.mp3"},
-                {"name": "Disco Beat", "url": "https://assets.mixkit.co/music/preview/mixkit-the-dream-442.mp3"},
-                {"name": "Soul Funk", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"}
+                {"name": "Uptown Funk Mark Ronson", "url": ""},
+                {"name": "Get Lucky Daft Punk", "url": ""},
+                {"name": "24K Magic Bruno Mars", "url": ""}
             ],
             hindi: [
-                {"name": "Bollywood Beat 1", "url": "https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3"},
-                {"name": "Desi Rhythm", "url": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"},
-                {"name": "Indian Pop", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"}
+                {"name": "Tum Hi Ho", "url": ""},
+                {"name": "Gerua", "url": ""},
+                {"name": "Tera Ban Jaunga", "url": ""}
             ],
             honey_singh: [
-                {"name": "Punjabi Party", "url": "https://assets.mixkit.co/music/preview/mixkit-deep-urban-623.mp3"},
-                {"name": "Desi Hip Hop", "url": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"},
-                {"name": "Bhangra Beat", "url": "https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3"}
+                {"name": "Blue Eyes Honey Singh", "url": ""},
+                {"name": "Lungi Dance Honey Singh", "url": ""},
+                {"name": "High Heels Honey Singh", "url": ""}
             ],
             kk_special: [
-                {"name": "Emotional Ballad", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"},
-                {"name": "Melodic Track", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"},
-                {"name": "Soulful Voice", "url": "https://assets.mixkit.co/music/preview/mixkit-the-dream-442.mp3"}
+                {"name": "Tadap Tadap KK", "url": ""},
+                {"name": "Zara Sa KK", "url": ""},
+                {"name": "Yaaron KK", "url": ""}
             ],
             krishna_flute: [
-                {"name": "Meditation Flute", "url": "https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3"},
-                {"name": "Peaceful Melody", "url": "https://assets.mixkit.co/music/preview/mixkit-spirit-of-the-valley-488.mp3"},
-                {"name": "Calming Tune", "url": "https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3"}
+                {"name": "Krishna Flute Meditation", "url": ""},
+                {"name": "Divine Flute Music", "url": ""},
+                {"name": "Peaceful Flute Melody", "url": ""}
             ],
             late_night_chill: [
-                {"name": "Chillout Lounge", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"},
-                {"name": "Relaxing Vibes", "url": "https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3"},
-                {"name": "Night Drive", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"}
+                {"name": "Chillout Lounge Music", "url": ""},
+                {"name": "Relaxing Ambient Music", "url": ""},
+                {"name": "Night Drive Music", "url": ""}
             ],
             marathi: [
-                {"name": "Marathi Folk 1", "url": "https://assets.mixkit.co/music/preview/mixkit-the-dream-442.mp3"},
-                {"name": "Lavani Beat", "url": "https://assets.mixkit.co/music/preview/mixkit-funky-groove-299.mp3"},
-                {"name": "Traditional Song", "url": "https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3"}
+                {"name": "Zingat", "url": ""},
+                {"name": "Apsara Aali", "url": ""},
+                {"name": "Lagu Zala", "url": ""}
             ],
             mashup: [
-                {"name": "Bollywood Mashup", "url": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"},
-                {"name": "Party Remix", "url": "https://assets.mixkit.co/music/preview/mixkit-deep-urban-623.mp3"},
-                {"name": "Fusion Mix", "url": "https://assets.mixkit.co/music/preview/mixkit-funky-groove-299.mp3"}
+                {"name": "Bollywood Mashup 2024", "url": ""},
+                {"name": "Party Mashup Songs", "url": ""},
+                {"name": "Romantic Mashup Hindi", "url": ""}
             ],
             vishal_mishra: [
-                {"name": "Soulful Composition", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"},
-                {"name": "Heartfelt Melody", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"},
-                {"name": "Emotional Track", "url": "https://assets.mixkit.co/music/preview/mixkit-the-dream-442.mp3"}
+                {"name": "Tere Hawale Vishal Mishra", "url": ""},
+                {"name": "Man Bhaariya Vishal Mishra", "url": ""},
+                {"name": "Kaise Hua Vishal Mishra", "url": ""}
             ]
         };
 
@@ -371,12 +466,12 @@ async function getSongs(folder) {
                     const songName = li.getAttribute("data-name");
                     
                     const songList = Array.from(DOM.songUL.querySelectorAll("li"));
-                    const index = songList.findIndex(songLi => songLi.getAttribute("data-url") === songUrl);
+                    const index = songList.findIndex(songLi => songLi.getAttribute("data-name") === songName);
                     if (index !== -1) {
                         APP_STATE.currentIndex = index;
                     }
                     
-                    audioControls.playMusic(songUrl);
+                    audioControls.playMusic({ name: songName, url: songUrl });
                 });
             });
         }
@@ -390,7 +485,6 @@ async function getSongs(folder) {
             const firstSong = songs[0];
             DOM.songInfo.innerHTML = utils.sanitizeName(firstSong.name);
             DOM.songTime.innerHTML = "00:00 / 00:00";
-            APP_STATE.currentSong.src = firstSong.url;
             if (DOM.play) DOM.play.src = "img/play.svg";
         }
 
@@ -404,7 +498,6 @@ async function getSongs(folder) {
 
 async function displayAlbums() {
     try {
-        // Hardcoded albums data with working image URLs
         const albumsData = {
             albums: [
                 {
