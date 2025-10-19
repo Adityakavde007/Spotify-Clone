@@ -1,4 +1,6 @@
-{
-  "title": "Funk",
-  "description": "Groovy beats and dance music"
-}
+ {
+      "folder": "funk",
+      "title": "Funk",
+      "description": "Groovy beats and dance music",
+      "cover": "songs/funk/cover.jpg"
+    }
