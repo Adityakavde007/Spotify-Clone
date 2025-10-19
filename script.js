@@ -1,3 +1,5 @@
+console.log("let write java script");
+
 // Constants and State
 const APP_STATE = {
     currentSong: null,
@@ -236,23 +238,23 @@ const uiControls = {
         `;
     },
 
-    createAlbumCard(folder, data) {
+    createAlbumCard(album) {
         const card = document.createElement('div');
         card.className = 'card';
-        card.setAttribute('data-folder', folder);
+        card.setAttribute('data-folder', album.folder);
         card.innerHTML = `
             <div class="play">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 18 18">
                     <path fill="black" d="M15.544 9.59a1 1 0 0 1-.053 1.728L6.476 16.2A1 1 0 0 1 5 15.321V4.804a1 1 0 0 1 1.53-.848l9.014 5.634Z"/>
                 </svg>
             </div>
-            <img src="/songs/${folder}/cover.jpg" alt="${data.title}" onerror="this.style.display='none'">
-            <h2>${data.title}</h2>
-            <p>${data.description}</p>
+            <img src="${album.cover}" alt="${album.title}" onerror="this.style.display='none'">
+            <h2>${album.title}</h2>
+            <p>${album.description}</p>
         `;
         
         card.addEventListener('click', async () => {
-            APP_STATE.songs = await getSongs(folder);
+            APP_STATE.songs = await getSongs(album.folder);
             
             setTimeout(() => {
                 const firstSong = document.querySelector(".songlist li");
@@ -268,24 +270,6 @@ const uiControls = {
         return card;
     }
 };
-
-// Setup Album Card Events
-function setupAlbumCardEvents() {
-    document.querySelectorAll(".card").forEach(card => {
-        card.addEventListener("click", async (e) => {
-            const folder = e.currentTarget.dataset.folder;
-            APP_STATE.songs = await getSongs(folder);
-            
-            setTimeout(() => {
-                const firstSong = document.querySelector(".songlist li");
-                if (firstSong) {
-                    const songUrl = firstSong.getAttribute("data-url");
-                    audioControls.playMusic(songUrl);
-                }
-            }, 300);
-        });
-    });
-}
 
 // Main Functions
 async function getSongs(folder) {
@@ -304,18 +288,10 @@ async function getSongs(folder) {
         utils.resetEventListeners();
         audioControls.resetSeekbar();
 
-        // CHANGED: Removed localhost URL
-        const res = await fetch(`/${folder}/`);
-        const html = await res.text();
-        const div = document.createElement("div");
-        div.innerHTML = html;
-
-        const songs = Array.from(div.getElementsByTagName("a"))
-            .filter(a => a.innerText.endsWith(".mp3"))
-            .map(a => ({
-                name: a.innerText,
-                url: decodeURIComponent(a.getAttribute("href")),
-            }));
+        // Load from static songs.json
+        const response = await fetch('/songs.json');
+        const data = await response.json();
+        const songs = data[folder] || [];
 
         if (DOM.songUL) {
             DOM.songUL.innerHTML = songs.map(song => uiControls.createSongListItem(song)).join("");
@@ -361,37 +337,20 @@ async function getSongs(folder) {
 
 async function displayAlbums() {
     try {
-        // CHANGED: Removed localhost URL
-        const response = await fetch(`/songs/`);
-        const html = await response.text();
-        const div = document.createElement("div");
-        div.innerHTML = html;
+        // Load from static albums.json
+        const response = await fetch('/albums.json');
+        const data = await response.json();
         
         if (DOM.cardContainer) {
             DOM.cardContainer.innerHTML = '';
         }
         
-        const anchors = Array.from(div.getElementsByTagName("a"));
-        
-        for (const anchor of anchors) {
-            const decodedHref = decodeURIComponent(anchor.href);
-            const normalizedHref = decodedHref.replace(/\\/g, '/');
-            
-            if (normalizedHref.includes("/songs/") && !normalizedHref.endsWith("/songs/")) {
-                const folder = normalizedHref.split("/").slice(-2)[0];
-                
-                try {
-                    // CHANGED: Removed localhost URL
-                    const response = await fetch(`/songs/${folder}/info.json`);
-                    const data = await response.json();
-                    if (DOM.cardContainer) {
-                        DOM.cardContainer.appendChild(uiControls.createAlbumCard(folder, data));
-                    }
-                } catch (error) {
-                    console.error(`Error loading album ${folder}:`, error);
-                }
+        data.albums.forEach(album => {
+            if (DOM.cardContainer) {
+                DOM.cardContainer.appendChild(uiControls.createAlbumCard(album));
             }
-        }
+        });
+        
     } catch (error) {
         console.error("Error displaying albums:", error);
     }
@@ -400,13 +359,11 @@ async function displayAlbums() {
 async function main() {
     initializeDOMElements();
     
-    // CHANGED: Use folder name directly
-    APP_STATE.songs = await getSongs("ABC");
+    // Load albums
     await displayAlbums();
     
+    // Setup UI controls
     uiControls.setupHamburgerMenu();
-    
-    setTimeout(setupAlbumCardEvents, 500);
 }
 
 // Initialize app
