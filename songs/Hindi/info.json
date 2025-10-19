@@ -1,4 +1,6 @@
-{
-  "title": "Hindi Hits",
-  "description": "Bollywood chartbusters and popular songs"
-}
+ {
+      "folder": "hindi",
+      "title": "Hindi Hits",
+      "description": "Bollywood chartbusters and popular songs",
+      "cover": "songs/hindi/cover.jpg"
+    }
