@@ -113,13 +113,17 @@ const audioControls = {
     },
 
     playMusic(url, pause = false) {
+        console.log("Attempting to play:", url);
+        
         if (!APP_STATE.currentSong) {
             APP_STATE.currentSong = new Audio();
         }
         
+        // Stop current playback
         APP_STATE.currentSong.pause();
         APP_STATE.currentSong.currentTime = 0;
         
+        // Set new source
         APP_STATE.currentSong.src = url;
         this.resetSeekbar();
         
@@ -135,8 +139,25 @@ const audioControls = {
         }
         
         if (!pause) {
-            APP_STATE.currentSong.play();
-            if (DOM.play) DOM.play.src = "img/pause.svg";
+            // Use canplaythrough to ensure audio is ready
+            const playWhenReady = () => {
+                APP_STATE.currentSong.play().then(() => {
+                    console.log("Audio playing successfully");
+                    if (DOM.play) DOM.play.src = "img/pause.svg";
+                }).catch(error => {
+                    console.error("Play failed:", error);
+                });
+                APP_STATE.currentSong.removeEventListener('canplaythrough', playWhenReady);
+            };
+            
+            APP_STATE.currentSong.addEventListener('canplaythrough', playWhenReady);
+            
+            // Also try direct play as fallback
+            APP_STATE.currentSong.play().then(() => {
+                if (DOM.play) DOM.play.src = "img/pause.svg";
+            }).catch(error => {
+                console.log("Direct play failed, waiting for canplaythrough");
+            });
         } else {
             if (DOM.play) DOM.play.src = "img/play.svg";
         }
@@ -149,8 +170,11 @@ const audioControls = {
             if (!APP_STATE.currentSong) return;
             
             if (APP_STATE.currentSong.paused) {
-                APP_STATE.currentSong.play();
-                DOM.play.src = "img/pause.svg";
+                APP_STATE.currentSong.play().then(() => {
+                    DOM.play.src = "img/pause.svg";
+                }).catch(error => {
+                    console.error("Play failed:", error);
+                });
             } else {
                 APP_STATE.currentSong.pause();
                 DOM.play.src = "img/play.svg";
@@ -275,62 +299,62 @@ async function getSongs(folder) {
         utils.resetEventListeners();
         audioControls.resetSeekbar();
 
-        // Working online audio URLs
+        // Real music samples from Mixkit
         const songsData = {
             arjit_singh: [
-                {"name": "Tum Hi Ho", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Channa Mereya", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Phir Mohabbat", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Romantic Melody 1", "url": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"},
+                {"name": "Love Song 2", "url": "https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3"},
+                {"name": "Heartfelt Track 3", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"}
             ],
             english: [
-                {"name": "Shape of You", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Blinding Lights", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Dance Monkey", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Pop Dance Beat", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"},
+                {"name": "Electronic Vibes", "url": "https://assets.mixkit.co/music/preview/mixkit-deep-urban-623.mp3"},
+                {"name": "Chill Pop", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"}
             ],
             funk: [
-                {"name": "Uptown Funk", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Get Lucky", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "24K Magic", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Funky Groove", "url": "https://assets.mixkit.co/music/preview/mixkit-funky-groove-299.mp3"},
+                {"name": "Disco Beat", "url": "https://assets.mixkit.co/music/preview/mixkit-the-dream-442.mp3"},
+                {"name": "Soul Funk", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"}
             ],
             hindi: [
-                {"name": "Tum Hi Ho", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Gerua", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Tera Ban Jaunga", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Bollywood Beat 1", "url": "https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3"},
+                {"name": "Desi Rhythm", "url": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"},
+                {"name": "Indian Pop", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"}
             ],
             honey_singh: [
-                {"name": "Blue Eyes", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Lungi Dance", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "High Heels", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Punjabi Party", "url": "https://assets.mixkit.co/music/preview/mixkit-deep-urban-623.mp3"},
+                {"name": "Desi Hip Hop", "url": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"},
+                {"name": "Bhangra Beat", "url": "https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3"}
             ],
             kk_special: [
-                {"name": "Tadap Tadap", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Zara Sa", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Yaaron", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Emotional Ballad", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"},
+                {"name": "Melodic Track", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"},
+                {"name": "Soulful Voice", "url": "https://assets.mixkit.co/music/preview/mixkit-the-dream-442.mp3"}
             ],
             krishna_flute: [
-                {"name": "Divine Flute", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Peaceful Melody", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Meditation Music", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Meditation Flute", "url": "https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3"},
+                {"name": "Peaceful Melody", "url": "https://assets.mixkit.co/music/preview/mixkit-spirit-of-the-valley-488.mp3"},
+                {"name": "Calming Tune", "url": "https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3"}
             ],
             late_night_chill: [
-                {"name": "Chill Vibes", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Relaxing Beats", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Night Drive", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Chillout Lounge", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"},
+                {"name": "Relaxing Vibes", "url": "https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3"},
+                {"name": "Night Drive", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"}
             ],
             marathi: [
-                {"name": "Zing Zing Zingat", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Apsara Aali", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Lagu Zala", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Marathi Folk 1", "url": "https://assets.mixkit.co/music/preview/mixkit-the-dream-442.mp3"},
+                {"name": "Lavani Beat", "url": "https://assets.mixkit.co/music/preview/mixkit-funky-groove-299.mp3"},
+                {"name": "Traditional Song", "url": "https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3"}
             ],
             mashup: [
-                {"name": "Bollywood Mashup", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Party Mashup", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Romantic Mashup", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Bollywood Mashup", "url": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"},
+                {"name": "Party Remix", "url": "https://assets.mixkit.co/music/preview/mixkit-deep-urban-623.mp3"},
+                {"name": "Fusion Mix", "url": "https://assets.mixkit.co/music/preview/mixkit-funky-groove-299.mp3"}
             ],
             vishal_mishra: [
-                {"name": "Tere Hawale", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Man Bhaariya", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
-                {"name": "Kaise Hua", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+                {"name": "Soulful Composition", "url": "https://assets.mixkit.co/music/preview/mixkit-hazy-after-hours-132.mp3"},
+                {"name": "Heartfelt Melody", "url": "https://assets.mixkit.co/music/preview/mixkit-summer-bossa-538.mp3"},
+                {"name": "Emotional Track", "url": "https://assets.mixkit.co/music/preview/mixkit-the-dream-442.mp3"}
             ]
         };
 
@@ -387,67 +411,67 @@ async function displayAlbums() {
                     folder: "arjit_singh",
                     title: "Arijit Singh",
                     description: "Soulful romantic hits and emotional melodies",
-                    cover: "https://via.placeholder.com/200x200/FF6B6B/white?text=Arijit+Singh"
+                    cover: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "english",
                     title: "English Songs", 
                     description: "International pop hits and English classics",
-                    cover: "https://via.placeholder.com/200x200/4ECDC4/white?text=English+Songs"
+                    cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "funk",
                     title: "Funk",
                     description: "Groovy beats and dance music",
-                    cover: "https://via.placeholder.com/200x200/FFD166/white?text=Funk+Beats"
+                    cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "hindi",
                     title: "Hindi Hits",
                     description: "Bollywood chartbusters and popular songs",
-                    cover: "https://via.placeholder.com/200x200/06D6A0/white?text=Hindi+Hits"
+                    cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "honey_singh",
                     title: "Honey Singh",
                     description: "Punjabi rap and party tracks",
-                    cover: "https://via.placeholder.com/200x200/118AB2/white?text=Honey+Singh"
+                    cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "kk_special",
                     title: "KK Special",
                     description: "Legendary KK's unforgettable melodies", 
-                    cover: "https://via.placeholder.com/200x200/073B4C/white?text=KK+Special"
+                    cover: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "krishna_flute",
                     title: "Krishna Flute",
                     description: "Divine flute music for meditation",
-                    cover: "https://via.placeholder.com/200x200/7209B7/white?text=Krishna+Flute"
+                    cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "late_night_chill", 
                     title: "Late Night Chill",
                     description: "Relaxing tunes for quiet evenings",
-                    cover: "https://via.placeholder.com/200x200/3A86FF/white?text=Late+Night+Chill"
+                    cover: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "marathi",
                     title: "Marathi Songs",
                     description: "Traditional and contemporary Marathi music",
-                    cover: "https://via.placeholder.com/200x200/F15BB5/white?text=Marathi+Songs"
+                    cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "mashup",
                     title: "Mashup", 
                     description: "Creative song remixes and blends",
-                    cover: "https://via.placeholder.com/200x200/8338EC/white?text=Mashup+Magic"
+                    cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop"
                 },
                 {
                     folder: "vishal_mishra",
                     title: "Vishal Mishra",
                     description: "Soulful compositions and heartfelt tracks",
-                    cover: "https://via.placeholder.com/200x200/FB5607/white?text=Vishal+Mishra"
+                    cover: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=200&h=200&fit=crop"
                 }
             ]
         };
