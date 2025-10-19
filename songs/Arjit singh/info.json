@@ -1,4 +1,6 @@
-{
-  "title": "Arijit Singh",
-  "description": "Soulful romantic hits and emotional melodies"
-}
+  {
+      "folder": "arjit_singh",
+      "title": "Arijit Singh",
+      "description": "Soulful romantic hits and emotional melodies",
+      "cover": "songs/arjit_singh/cover.jpg"
+    }
