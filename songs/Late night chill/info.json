@@ -1,4 +1,6 @@
-{
-  "title": "Late Night Chill", 
-  "description": "Relaxing tunes for quiet evenings"
-}
+ {
+      "folder": "late_night_chill", 
+      "title": "Late Night Chill",
+      "description": "Relaxing tunes for quiet evenings",
+      "cover": "songs/late_night_chill/cover.jpg"
+    }
