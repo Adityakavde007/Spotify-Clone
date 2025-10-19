@@ -275,7 +275,7 @@ async function getSongs(folder) {
         utils.resetEventListeners();
         audioControls.resetSeekbar();
 
-        // Hardcoded songs data
+        // Working online audio URLs
         const songsData = {
             arjit_singh: [
                 {"name": "Tum Hi Ho", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
@@ -380,74 +380,74 @@ async function getSongs(folder) {
 
 async function displayAlbums() {
     try {
-        // Hardcoded albums data
+        // Hardcoded albums data with working image URLs
         const albumsData = {
             albums: [
                 {
                     folder: "arjit_singh",
                     title: "Arijit Singh",
                     description: "Soulful romantic hits and emotional melodies",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/FF6B6B/white?text=Arijit+Singh"
                 },
                 {
                     folder: "english",
                     title: "English Songs", 
                     description: "International pop hits and English classics",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/4ECDC4/white?text=English+Songs"
                 },
                 {
                     folder: "funk",
                     title: "Funk",
                     description: "Groovy beats and dance music",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/FFD166/white?text=Funk+Beats"
                 },
                 {
                     folder: "hindi",
                     title: "Hindi Hits",
                     description: "Bollywood chartbusters and popular songs",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/06D6A0/white?text=Hindi+Hits"
                 },
                 {
                     folder: "honey_singh",
                     title: "Honey Singh",
                     description: "Punjabi rap and party tracks",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/118AB2/white?text=Honey+Singh"
                 },
                 {
                     folder: "kk_special",
                     title: "KK Special",
                     description: "Legendary KK's unforgettable melodies", 
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/073B4C/white?text=KK+Special"
                 },
                 {
                     folder: "krishna_flute",
                     title: "Krishna Flute",
                     description: "Divine flute music for meditation",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/7209B7/white?text=Krishna+Flute"
                 },
                 {
                     folder: "late_night_chill", 
                     title: "Late Night Chill",
                     description: "Relaxing tunes for quiet evenings",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/3A86FF/white?text=Late+Night+Chill"
                 },
                 {
                     folder: "marathi",
                     title: "Marathi Songs",
                     description: "Traditional and contemporary Marathi music",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/F15BB5/white?text=Marathi+Songs"
                 },
                 {
                     folder: "mashup",
                     title: "Mashup", 
                     description: "Creative song remixes and blends",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/8338EC/white?text=Mashup+Magic"
                 },
                 {
                     folder: "vishal_mishra",
                     title: "Vishal Mishra",
                     description: "Soulful compositions and heartfelt tracks",
-                    cover: "img/default-cover.jpg"
+                    cover: "https://via.placeholder.com/200x200/FB5607/white?text=Vishal+Mishra"
                 }
             ]
         };
