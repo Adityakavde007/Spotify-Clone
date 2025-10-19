@@ -34,8 +34,6 @@ function initializeDOMElements() {
         DOM[key] = selector.startsWith('.') 
             ? document.querySelector(selector)
             : document.getElementById(selector);
-        
-        console.log(`${key}:`, DOM[key]);
     });
 }
 
@@ -115,8 +113,6 @@ const audioControls = {
     },
 
     playMusic(url, pause = false) {
-        console.log("Playing:", url);
-        
         if (!APP_STATE.currentSong) {
             APP_STATE.currentSong = new Audio();
         }
@@ -255,7 +251,6 @@ const uiControls = {
         `;
         
         card.addEventListener('click', async () => {
-            console.log("Album clicked:", album.folder);
             APP_STATE.songs = await getSongs(album.folder);
         });
         
@@ -266,8 +261,6 @@ const uiControls = {
 // Main Functions
 async function getSongs(folder) {
     try {
-        console.log("Loading songs for:", folder);
-        
         APP_STATE.currentIndex = 0;
         APP_STATE.isDragging = false;
         APP_STATE.currFolder = folder;
@@ -282,18 +275,66 @@ async function getSongs(folder) {
         utils.resetEventListeners();
         audioControls.resetSeekbar();
 
-        // Load from static songs.json
-        const response = await fetch('./songs.json');
-        
-        if (!response.ok) {
-            console.error("Failed to load songs.json");
-            return [];
-        }
-        
-        const data = await response.json();
-        const songs = data[folder] || [];
-        
-        console.log("Found songs:", songs);
+        // Hardcoded songs data
+        const songsData = {
+            arjit_singh: [
+                {"name": "Tum Hi Ho", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Channa Mereya", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Phir Mohabbat", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            english: [
+                {"name": "Shape of You", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Blinding Lights", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Dance Monkey", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            funk: [
+                {"name": "Uptown Funk", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Get Lucky", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "24K Magic", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            hindi: [
+                {"name": "Tum Hi Ho", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Gerua", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Tera Ban Jaunga", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            honey_singh: [
+                {"name": "Blue Eyes", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Lungi Dance", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "High Heels", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            kk_special: [
+                {"name": "Tadap Tadap", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Zara Sa", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Yaaron", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            krishna_flute: [
+                {"name": "Divine Flute", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Peaceful Melody", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Meditation Music", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            late_night_chill: [
+                {"name": "Chill Vibes", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Relaxing Beats", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Night Drive", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            marathi: [
+                {"name": "Zing Zing Zingat", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Apsara Aali", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Lagu Zala", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            mashup: [
+                {"name": "Bollywood Mashup", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Party Mashup", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Romantic Mashup", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ],
+            vishal_mishra: [
+                {"name": "Tere Hawale", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Man Bhaariya", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"},
+                {"name": "Kaise Hua", "url": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"}
+            ]
+        };
+
+        const songs = songsData[folder] || [];
 
         if (DOM.songUL) {
             DOM.songUL.innerHTML = songs.map(song => uiControls.createSongListItem(song)).join("");
@@ -303,6 +344,14 @@ async function getSongs(folder) {
             DOM.songUL.querySelectorAll("li").forEach(li => {
                 li.addEventListener("click", () => {
                     const songUrl = li.getAttribute("data-url");
+                    const songName = li.getAttribute("data-name");
+                    
+                    const songList = Array.from(DOM.songUL.querySelectorAll("li"));
+                    const index = songList.findIndex(songLi => songLi.getAttribute("data-url") === songUrl);
+                    if (index !== -1) {
+                        APP_STATE.currentIndex = index;
+                    }
+                    
                     audioControls.playMusic(songUrl);
                 });
             });
@@ -331,27 +380,83 @@ async function getSongs(folder) {
 
 async function displayAlbums() {
     try {
-        console.log("Loading albums...");
-        
-        // Load from static albums.json
-        const response = await fetch('./albums.json');
-        
-        if (!response.ok) {
-            console.error("Failed to load albums.json - Status:", response.status);
-            
-            // Create fallback albums if JSON fails
-            createFallbackAlbums();
-            return;
-        }
-        
-        const data = await response.json();
-        console.log("Loaded albums:", data.albums);
-        
+        // Hardcoded albums data
+        const albumsData = {
+            albums: [
+                {
+                    folder: "arjit_singh",
+                    title: "Arijit Singh",
+                    description: "Soulful romantic hits and emotional melodies",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "english",
+                    title: "English Songs", 
+                    description: "International pop hits and English classics",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "funk",
+                    title: "Funk",
+                    description: "Groovy beats and dance music",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "hindi",
+                    title: "Hindi Hits",
+                    description: "Bollywood chartbusters and popular songs",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "honey_singh",
+                    title: "Honey Singh",
+                    description: "Punjabi rap and party tracks",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "kk_special",
+                    title: "KK Special",
+                    description: "Legendary KK's unforgettable melodies", 
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "krishna_flute",
+                    title: "Krishna Flute",
+                    description: "Divine flute music for meditation",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "late_night_chill", 
+                    title: "Late Night Chill",
+                    description: "Relaxing tunes for quiet evenings",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "marathi",
+                    title: "Marathi Songs",
+                    description: "Traditional and contemporary Marathi music",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "mashup",
+                    title: "Mashup", 
+                    description: "Creative song remixes and blends",
+                    cover: "img/default-cover.jpg"
+                },
+                {
+                    folder: "vishal_mishra",
+                    title: "Vishal Mishra",
+                    description: "Soulful compositions and heartfelt tracks",
+                    cover: "img/default-cover.jpg"
+                }
+            ]
+        };
+
         if (DOM.cardContainer) {
             DOM.cardContainer.innerHTML = '';
         }
         
-        data.albums.forEach(album => {
+        albumsData.albums.forEach(album => {
             if (DOM.cardContainer) {
                 DOM.cardContainer.appendChild(uiControls.createAlbumCard(album));
             }
@@ -359,40 +464,10 @@ async function displayAlbums() {
         
     } catch (error) {
         console.error("Error displaying albums:", error);
-        createFallbackAlbums();
     }
 }
 
-// Fallback if albums.json doesn't load
-function createFallbackAlbums() {
-    console.log("Creating fallback albums");
-    
-    if (!DOM.cardContainer) return;
-    
-    const fallbackAlbums = [
-        {
-            folder: "arjit_singh",
-            title: "Arijit Singh",
-            description: "Soulful romantic hits",
-            cover: "img/default-cover.jpg"
-        },
-        {
-            folder: "english",
-            title: "English Songs",
-            description: "International pop hits", 
-            cover: "img/default-cover.jpg"
-        }
-    ];
-    
-    DOM.cardContainer.innerHTML = '';
-    
-    fallbackAlbums.forEach(album => {
-        DOM.cardContainer.appendChild(uiControls.createAlbumCard(album));
-    });
-}
-
 async function main() {
-    console.log("Initializing app...");
     initializeDOMElements();
     
     // Load albums
@@ -400,8 +475,6 @@ async function main() {
     
     // Setup UI controls
     uiControls.setupHamburgerMenu();
-    
-    console.log("App initialized");
 }
 
 // Initialize app
