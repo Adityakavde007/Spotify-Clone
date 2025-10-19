@@ -34,6 +34,8 @@ function initializeDOMElements() {
         DOM[key] = selector.startsWith('.') 
             ? document.querySelector(selector)
             : document.getElementById(selector);
+        
+        console.log(`${key}:`, DOM[key]);
     });
 }
 
@@ -113,6 +115,8 @@ const audioControls = {
     },
 
     playMusic(url, pause = false) {
+        console.log("Playing:", url);
+        
         if (!APP_STATE.currentSong) {
             APP_STATE.currentSong = new Audio();
         }
@@ -135,11 +139,8 @@ const audioControls = {
         }
         
         if (!pause) {
-            APP_STATE.currentSong.addEventListener('canplaythrough', function playWhenReady() {
-                APP_STATE.currentSong.play();
-                if (DOM.play) DOM.play.src = "img/pause.svg";
-                APP_STATE.currentSong.removeEventListener('canplaythrough', playWhenReady);
-            }, { once: true });
+            APP_STATE.currentSong.play();
+            if (DOM.play) DOM.play.src = "img/pause.svg";
         } else {
             if (DOM.play) DOM.play.src = "img/play.svg";
         }
@@ -254,17 +255,8 @@ const uiControls = {
         `;
         
         card.addEventListener('click', async () => {
+            console.log("Album clicked:", album.folder);
             APP_STATE.songs = await getSongs(album.folder);
-            
-            setTimeout(() => {
-                const firstSong = document.querySelector(".songlist li");
-                if (firstSong) {
-                    const songUrl = firstSong.getAttribute("data-url");
-                    setTimeout(() => {
-                        audioControls.playMusic(songUrl);
-                    }, 100);
-                }
-            }, 300);
         });
         
         return card;
@@ -274,6 +266,8 @@ const uiControls = {
 // Main Functions
 async function getSongs(folder) {
     try {
+        console.log("Loading songs for:", folder);
+        
         APP_STATE.currentIndex = 0;
         APP_STATE.isDragging = false;
         APP_STATE.currFolder = folder;
@@ -289,9 +283,17 @@ async function getSongs(folder) {
         audioControls.resetSeekbar();
 
         // Load from static songs.json
-        const response = await fetch('/songs.json');
+        const response = await fetch('./songs.json');
+        
+        if (!response.ok) {
+            console.error("Failed to load songs.json");
+            return [];
+        }
+        
         const data = await response.json();
         const songs = data[folder] || [];
+        
+        console.log("Found songs:", songs);
 
         if (DOM.songUL) {
             DOM.songUL.innerHTML = songs.map(song => uiControls.createSongListItem(song)).join("");
@@ -301,14 +303,6 @@ async function getSongs(folder) {
             DOM.songUL.querySelectorAll("li").forEach(li => {
                 li.addEventListener("click", () => {
                     const songUrl = li.getAttribute("data-url");
-                    const songName = li.getAttribute("data-name");
-                    
-                    const songList = Array.from(DOM.songUL.querySelectorAll("li"));
-                    const index = songList.findIndex(songLi => songLi.getAttribute("data-url") === songUrl);
-                    if (index !== -1) {
-                        APP_STATE.currentIndex = index;
-                    }
-                    
                     audioControls.playMusic(songUrl);
                 });
             });
@@ -337,9 +331,21 @@ async function getSongs(folder) {
 
 async function displayAlbums() {
     try {
+        console.log("Loading albums...");
+        
         // Load from static albums.json
-        const response = await fetch('/albums.json');
+        const response = await fetch('./albums.json');
+        
+        if (!response.ok) {
+            console.error("Failed to load albums.json - Status:", response.status);
+            
+            // Create fallback albums if JSON fails
+            createFallbackAlbums();
+            return;
+        }
+        
         const data = await response.json();
+        console.log("Loaded albums:", data.albums);
         
         if (DOM.cardContainer) {
             DOM.cardContainer.innerHTML = '';
@@ -353,10 +359,40 @@ async function displayAlbums() {
         
     } catch (error) {
         console.error("Error displaying albums:", error);
+        createFallbackAlbums();
     }
 }
 
+// Fallback if albums.json doesn't load
+function createFallbackAlbums() {
+    console.log("Creating fallback albums");
+    
+    if (!DOM.cardContainer) return;
+    
+    const fallbackAlbums = [
+        {
+            folder: "arjit_singh",
+            title: "Arijit Singh",
+            description: "Soulful romantic hits",
+            cover: "img/default-cover.jpg"
+        },
+        {
+            folder: "english",
+            title: "English Songs",
+            description: "International pop hits", 
+            cover: "img/default-cover.jpg"
+        }
+    ];
+    
+    DOM.cardContainer.innerHTML = '';
+    
+    fallbackAlbums.forEach(album => {
+        DOM.cardContainer.appendChild(uiControls.createAlbumCard(album));
+    });
+}
+
 async function main() {
+    console.log("Initializing app...");
     initializeDOMElements();
     
     // Load albums
@@ -364,6 +400,8 @@ async function main() {
     
     // Setup UI controls
     uiControls.setupHamburgerMenu();
+    
+    console.log("App initialized");
 }
 
 // Initialize app
