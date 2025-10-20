@@ -1,0 +1,71 @@
+{
+  "albums": [
+    { 
+      "folder": "arjit_singh",
+      "title": "Arijit Singh",
+      "description": "Soulful romantic hits and emotional melodies",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760869809/lrvmvuuzsoy4kkqzqs9o.jpg"
+    },
+    {
+      "folder": "english",
+      "title": "English Songs", 
+      "description": "International pop hits and English classics",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760872190/lqiu9kcib52hchuuieng.jpg"
+    },
+    {
+      "folder": "funk",
+      "title": "Funk",
+      "description": "Groovy beats and dance music",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760872358/yrn5aompoh8bhktiv2cr.jpg"
+    },
+    {
+      "folder": "hindi",  
+      "title": "Hindi Hits",
+      "description": "Bollywood chartbusters and popular songs",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760872560/av3omiumral3k2xvrkok.jpg"
+    },
+    {
+      "folder": "honey_singh",  
+      "title": "Honey Singh",
+      "description": "Punjabi rap and party tracks",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760872880/kddzncetopsa0hmjfelm.jpg"
+    },
+    {
+      "folder": "kk_special",  
+      "title": "KK Special",
+      "description": "Legendary KK's unforgettable melodies", 
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760872880/kddzncetopsa0hmjfelm.jpg"
+    },
+    {
+      "folder": "krishna_flute",
+      "title": "Krishna Flute",
+      "description": "Divine flute music for meditation",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760873070/nn4c0b5zyzj9ghgeq0k9.jpg"
+    },
+    {
+      "folder": "late_night_chill",  
+      "title": "Late Night Chill",
+      "description": "Relaxing tunes for quiet evenings",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760873203/oknwxvzogxdl01ra2jvd.jpg"
+    },
+    {
+      "folder": "marathi",  
+      "title": "Marathi",
+      "description": "Traditional and contemporary Marathi music",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760873441/bn2fcqtbomdqozaawwdx.jpg"
+    },
+
+    {
+      "folder": "mashup",  
+      "title": "Mashup", 
+      "description": "Creative song remixes and blends",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760873591/tsqwin8b1hedt0bqsnxk.jpg"
+    },
+    {
+      "folder": "vishal_mishra",  
+      "title": "Vishal Mishra",
+      "description": "Soulful compositions and heartfelt tracks",
+      "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760873694/x2eodenxofyk1jwhh9hv.jpg"
+    }
+  ]
+}
