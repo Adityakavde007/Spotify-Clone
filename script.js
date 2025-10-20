@@ -55,6 +55,11 @@ async function loadSongs(albumName) {
             }, 100);
         }
 
+        // Open hamburger menu on mobile after album selection
+        if (window.innerWidth <= 768) {
+            document.querySelector(".left").style.left = "0";
+        }
+
     } catch (error) {
     }
 }
