@@ -272,6 +272,7 @@ body {
     .cardContainer{
         justify-content: center;
         margin: 0;
+        max-height: 58vh;
     }
 
     .right{
@@ -280,8 +281,9 @@ body {
     }
     .playbar{
         width: 88vw;
-       padding-left: 0%;
-       padding-right: 2%;
+        padding-left: 0%;
+        padding-right: 0%;
+       
     }
 
     .spotifyPlaylists h1{
@@ -329,5 +331,4 @@ body {
         margin-bottom: 10px;
     }
     
-
 }
