@@ -44,7 +44,7 @@
     },
     {
       "folder": "late_night_chill",  
-      "title": "Late Night Chill",
+      "title": "Night Chill",
       "description": "Relaxing tunes for quiet evenings",
       "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760873203/oknwxvzogxdl01ra2jvd.jpg"
     },
@@ -68,4 +68,5 @@
       "cover": "https://res.cloudinary.com/djny9yyoo/image/upload/v1760873694/x2eodenxofyk1jwhh9hv.jpg"
     }
   ]
+
 }
