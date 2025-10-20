@@ -280,7 +280,8 @@ body {
     }
     .playbar{
         width: 88vw;
-       
+       padding-left: 0%;
+       padding-right: 2%;
     }
 
     .spotifyPlaylists h1{
@@ -328,4 +329,5 @@ body {
         margin-bottom: 10px;
     }
     
+
 }
